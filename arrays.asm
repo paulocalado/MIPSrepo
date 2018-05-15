@@ -10,13 +10,40 @@
  
  iterator: .word 0
  size: .word 4
+ 
+  file:    .asciiz "string.in"
+    buffer:  .space 1024
+    error:   .ascii "Arquivo não encontrado"
+    
+   outfile: .asciiz "out.txt"  
 .text
 main:
+ # open a file
+        li $v0, 13    #open file
+        la $a0, file  
+        li $a1, 0     # flag for read only 0 = read; 1 write/create; 9 write/create/append
+        li $a2, 0     # flag for ignore
+        syscall       # open a file (file descriptor returned in $v0) 
+    
+    
+        move $s0, $v0   # file descriptor saved in $s0
+        
+
+        # read file
+        li   $v0, 14        #code to read file
+        add  $a0, $s0, $0	
+        la   $a1, buffer    # address of buffer from which to read
+        li   $a2,  1024     # hardcoded buffer length
+        syscall             # read from file
+
   la $t0, names
   lw $t1, iterator
   lw $t2, size
   li $t5, 0
   li $t6,0
+  
+  
+  
   #looping through the array
  loop: 
   bgt $t1, $t2, exit #check if the iterator is bigger than the size
@@ -67,6 +94,8 @@ main:
      j countElements  
   
   exit:
+  
+   
    li $v0, 4
    move $a0, $t7
    syscall
@@ -75,6 +104,10 @@ main:
    move $a0, $t8
    syscall
    
+ 
+   
    li $v0, 4
    la $a0, end
    syscall
+   
+  
