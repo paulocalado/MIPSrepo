@@ -1,10 +1,10 @@
 .data
  
- paulo: .asciiz "Paulo"
- henrique: .asciiz "Henrique"
- calado: .asciiz "Calado"
- aoun: .asciiz "Aoun"
- testando: .asciiz "testando-123"
+ paulo: .asciiz "Essa"
+ henrique: .asciiz "Frase"
+ calado: .asciiz "Muito Grande"
+ aoun: .asciiz "quase"
+ testando: .asciiz "mn"
  names: .word paulo, henrique, calado, aoun, testando
  end: .asciiz "\nend of loop"
  
@@ -29,9 +29,9 @@ main:
   
   printElement:
   li $t5,0
-  li $v0, 4
-  lw $a0,0($t3)
-  syscall
+ # li $v0, 4
+  #lw $a0,0($t3)
+  #syscall
   
   addi $t1, $t1, 1
   
@@ -45,8 +45,8 @@ main:
     j     countElements
   
   printSize:
-    bgt $t6,$t5, biggestElement
-    blt $t6, $t5, smallestElement
+    bgt $t5,$t6, biggestElement
+    blt $t5,$t6, smallestElement
     # add $t6, $zero, $t5 #using an temporary register to check which one is bigger
     #li   $v0,1
     #add  $a0, $0,$t6
@@ -55,11 +55,11 @@ main:
     j printElement
     
     biggestElement:
-     la $t7, 0($t4)
+     lw $t7, 0($t3)
      j updateRegister
      
     smallestElement:
-     la  $t8, 0($t4)
+     lw  $t8, 0($t3)
      j updateRegister
      
    updateRegister:
