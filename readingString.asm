@@ -7,6 +7,7 @@
     	smallWord: .space 1024
 	bigWord: .space 1024
 	auxWord: .space 1024
+	breakLine: .asciiz "\n"
 .text
 
 main:
@@ -35,6 +36,9 @@ messageProperties:
     	la $s2, smallWord
     	li $t8, 0
     	li $t9, 0
+    	la $s5,($s4)
+    	la $k0, breakLine
+    	
      
 stringLoop:
     	#add $s1, $s0, $t0   #$s1 = message[i]
@@ -50,11 +54,13 @@ addIterator:
     	addi $s0, $s0, 1
     	
     	addi $t0, $t0, 1    #i++
-    
+    	
     	j stringLoop    #Going back to the beginning of the loop
     
 ifFirstWord:
    	sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
+   	move $s4, $zero
+   	la $s4, ($s5)
    	bne $t6, $zero, printSize
  	  
       	li $v0, 1
@@ -67,11 +73,13 @@ ifFirstWord:
      
      	add  $t6, $zero, $t0
      	add  $t5, $zero, $t0
+     	
    	j addIterator
    
         
 printSize:
 	addi $t7, $t7, -1
+	#la $s4, ($s5)
     	li $v0, 1
     	move $a0, $t7
     	syscall  
@@ -79,11 +87,8 @@ printSize:
      	li $v0, 4
      	la $a0, auxWord
      	syscall
-     	
-     	li $v0, 4
-     	la $a0, ($s4)
-     	syscall
-     
+
+	#la $s4, ($s5)
      	add  $t6, $zero, $t0
     	j addIterator
     
