@@ -1,12 +1,14 @@
 .data
- message: .asciiz "Paul\no Henrique"
+ message: .asciiz "Paulo H\nenrique"
  key: .word 1
  file:    .asciiz "string.in"
     buffer:  .space 1024
     error:   .ascii "Arquivo não encontrado"
+    
 .text
 main:
  # open a file
+  	
         li $v0, 13    #open file
         la $a0, file  
         li $a1, 0     # flag for read only 0 = read; 1 write/create; 9 write/create/append
@@ -22,28 +24,49 @@ main:
         add  $a0, $s0, $0	
         la   $a1, buffer    # address of buffer from which to read
         li   $a2,  1024     # hardcoded buffer length
+       
+        
         syscall             # read from file
 messageProperties:
-    la $s0, message     #s0 will hold message that will be iterated through
+    la $s0, buffer     #s0 will hold message that will be iterated through
     lw $t1, key     #s1 will hold the key to shift by
     li $t0, 0       #t0 will be iterator, starting at 0
- 
+    li $t8, 2048    
+    
 encryptionLoop:
     add $s1, $s0, $t0   #$s1 = message[i]
-    lb $s2, 0($s1)      #Loading char to shift into $s2
-    
+    add $s3, $s0, $t8
+    lb $s2, 0($s1)      #Loading char to shift into $s2 
+    sb $s2,0($s3)
     beq $s2, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
-    beq $s2, '\n', exit
-    add $s2, $s2, $t1   #Shifting the character by the key amount
-    #la $s1, ($s2)       #Changing the character in message to the shifted character
+    beq $s2, '\n', printSize
+    
+ addIterator:   
+    addi $t8, $t8, 1
     addi $t0, $t0, 1    #i++
+    
     j encryptionLoop    #Going back to the beginning of the loop
     
+   
+    printSize:
+    sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
+    
+    li $v0, 1
+    move $a0, $t7
+    syscall  
+    
+     li $v0, 4
+     move $a0, $s3
+     syscall
+     
+     add  $t6, $zero, $t0
+    j addIterator
+    
   exit:
-  li $v0, 1
-  move $a0, $t0
-  syscall  
+  
   
   li $v0, 4
-  move $a0, $s1
+  move $a0, $s3
   syscall
+  
+  
