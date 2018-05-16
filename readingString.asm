@@ -4,9 +4,13 @@
  	file:    .asciiz "string.in"
    	buffer:  .space 1024
     	error:   .ascii "Arquivo não encontrado"
-    
+    	menorpalavra: .space 1024
+	maiorpalavra: .space 1024
+	auxWord: .space 1024
 .text
+
 main:
+	
  	# open a file
         li $v0, 13    #open file
         la $a0, file  
@@ -32,7 +36,7 @@ stringLoop:
     	add $s1, $s0, $t0   #$s1 = message[i]
    	add $s3, $s0, $t8
    	lb $s2, 0($s1)      #Loading char to shift into $s2 
-    	sb $s2,0($s3)
+    	sb $s2, 0($s3)
     	beq $s2, '\n', ifFirstWord
     	beq $s2, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
     
@@ -46,7 +50,7 @@ addIterator:
 ifFirstWord:
    	sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
    	bne $t6, $zero, printSize
-      
+ 	  
       	li $v0, 1
     	move $a0, $t7
     	syscall  
@@ -81,7 +85,7 @@ exit:
     	syscall  
     
   	li $v0, 4
-  	move $a0, $s3
+  	move $a0, $s1
   	syscall
   
   
