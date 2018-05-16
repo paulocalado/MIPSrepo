@@ -1,5 +1,5 @@
 .data
- message: .asciiz "\nPaulo Henrique"
+ message: .asciiz "Paul\no Henrique"
  key: .word 1
  file:    .asciiz "string.in"
     buffer:  .space 1024
@@ -23,15 +23,17 @@ main:
         la   $a1, buffer    # address of buffer from which to read
         li   $a2,  1024     # hardcoded buffer length
         syscall             # read from file
-encryptMessage:
-    la $s0, buffer     #s0 will hold message that will be iterated through
+messageProperties:
+    la $s0, message     #s0 will hold message that will be iterated through
     lw $t1, key     #s1 will hold the key to shift by
     li $t0, 0       #t0 will be iterator, starting at 0
  
 encryptionLoop:
     add $s1, $s0, $t0   #$s1 = message[i]
     lb $s2, 0($s1)      #Loading char to shift into $s2
+    
     beq $s2, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
+    beq $s2, '\n', exit
     add $s2, $s2, $t1   #Shifting the character by the key amount
     #la $s1, ($s2)       #Changing the character in message to the shifted character
     addi $t0, $t0, 1    #i++
@@ -41,3 +43,7 @@ encryptionLoop:
   li $v0, 1
   move $a0, $t0
   syscall  
+  
+  li $v0, 4
+  move $a0, $s1
+  syscall
