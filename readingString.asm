@@ -31,15 +31,17 @@ messageProperties:
     la $s0, buffer     #s0 will hold message that will be iterated through
     lw $t1, key     #s1 will hold the key to shift by
     li $t0, 0       #t0 will be iterator, starting at 0
-    li $t8, 2048    
+    li $t8, 2048
+ 
     
 encryptionLoop:
     add $s1, $s0, $t0   #$s1 = message[i]
     add $s3, $s0, $t8
     lb $s2, 0($s1)      #Loading char to shift into $s2 
     sb $s2,0($s3)
+    beq $s2, '\n', ifFirstWord
     beq $s2, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
-    beq $s2, '\n', printSize
+    
     
  addIterator:   
     addi $t8, $t8, 1
@@ -47,9 +49,23 @@ encryptionLoop:
     
     j encryptionLoop    #Going back to the beginning of the loop
     
+   ifFirstWord:
+   	sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
+   	bne $t6, $zero, printSize
+      
+      li $v0, 1
+    move $a0, $t7
+    syscall  
+    
+     li $v0, 4
+     move $a0, $s3
+     syscall
+     
+     add  $t6, $zero, $t0
+    j addIterator
    
     printSize:
-    sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
+    addi $t7, $t7, -1
     
     li $v0, 1
     move $a0, $t7
@@ -63,8 +79,13 @@ encryptionLoop:
     j addIterator
     
   exit:
+  sub $t7, $t0, $t6
+  addi $t7, $t7, -1
   
-  
+   li $v0, 1
+    move $a0, $t7
+    syscall  
+    
   li $v0, 4
   move $a0, $s3
   syscall
