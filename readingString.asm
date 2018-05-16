@@ -4,8 +4,8 @@
  	file:    .asciiz "string.in"
    	buffer:  .space 1024
     	error:   .ascii "Arquivo não encontrado"
-    	menorpalavra: .space 1024
-	maiorpalavra: .space 1024
+    	smallWord: .space 1024
+	bigWord: .space 1024
 	auxWord: .space 1024
 .text
 
@@ -30,19 +30,25 @@ messageProperties:
     	la $s0, buffer     #s0 will hold message that will be iterated through
     	lw $t1, key     #s1 will hold the key to shift by
     	li $t0, 0       #t0 will be iterator, starting at 0
-    	li $t8, 2048
+    	la $s4, auxWord
+    	la $s3, bigWord
+    	la $s2, smallWord
+    	li $t8, 0
+    	li $t9, 0
      
 stringLoop:
-    	add $s1, $s0, $t0   #$s1 = message[i]
-   	add $s3, $s0, $t8
-   	lb $s2, 0($s1)      #Loading char to shift into $s2 
-    	sb $s2, 0($s3)
-    	beq $s2, '\n', ifFirstWord
-    	beq $s2, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
+    	#add $s1, $s0, $t0   #$s1 = message[i]
+   	#add $s4, $s0, $t8
+   	lb $t5, ($s0)      #Loading char to shift into $s2 
+    	sb $t5, ($s4)
+    	beq $t5, '\n', ifFirstWord
+    	beq $t5, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
     
     
 addIterator:   
-    	addi $t8, $t8, 1
+	addi $s4, $s4, 1
+    	addi $s0, $s0, 1
+    	
     	addi $t0, $t0, 1    #i++
     
     	j stringLoop    #Going back to the beginning of the loop
@@ -56,21 +62,26 @@ ifFirstWord:
     	syscall  
     	
      	li $v0, 4
-     	move $a0, $s3
+     	la $a0, auxWord
      	syscall
      
      	add  $t6, $zero, $t0
-   	 j addIterator
+     	add  $t5, $zero, $t0
+   	j addIterator
    
+        
 printSize:
-   	addi $t7, $t7, -1
-    
+	addi $t7, $t7, -1
     	li $v0, 1
     	move $a0, $t7
     	syscall  
     
      	li $v0, 4
-     	move $a0, $s3
+     	la $a0, auxWord
+     	syscall
+     	
+     	li $v0, 4
+     	la $a0, ($s4)
      	syscall
      
      	add  $t6, $zero, $t0
@@ -84,8 +95,8 @@ exit:
     	move $a0, $t7
     	syscall  
     
-  	li $v0, 4
-  	move $a0, $s1
-  	syscall
+  	#li $v0, 4
+  	#move $a0, $s1
+  	#syscall
   
   
