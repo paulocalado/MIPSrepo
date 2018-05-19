@@ -7,6 +7,7 @@
     	smallWord: .space 1024
 	bigWord: .space 1024
 	auxWord: .space 1024
+	aux2Word: .space 1024
 	breakLine: .asciiz "\n"
 .text
 
