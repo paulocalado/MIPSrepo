@@ -9,6 +9,7 @@
 	auxWord: .space 1024
 	aux2Word: .space 1024
 	breakLine: .asciiz "\n"
+	auxT: .word 0
 .text
 
 main:
@@ -19,7 +20,7 @@ main:
         li $a1, 0     # flag for read only 0 = read; 1 write/create; 9 write/create/append
         li $a2, 0     # flag for ignore
         syscall       # open a file (file descriptor returned in $v0) 
-     
+     	
         move $s0, $v0   # file descriptor saved in $s0
         # read file
         li   $v0, 14        #code to read file
@@ -39,13 +40,17 @@ messageProperties:
     	li $t9, 0
     	la $s5,($s4)
     	la $k0, breakLine
+    	li $t4, 0
+    	
     	
      
 stringLoop:
     	#add $s1, $s0, $t0   #$s1 = message[i]
    	#add $s4, $s0, $t8
+   	
    	lb $t5, ($s0)      #Loading char to shift into $s2 
     	sb $t5, ($s4)
+    	
     	beq $t5, '\n', ifFirstWord
     	beq $t5, $zero, exit    #Breaking the loop if we've reached the end: http://stackoverflow.com/questions/12739463/how-to-iterate-a-string-in-mips-assembly
     
@@ -60,10 +65,13 @@ addIterator:
     
 ifFirstWord:
    	sub $t7, $t0, $t6 #posistion where \n was found minus the last \n
-   	move $s4, $zero
-   	la $s4, ($s5)
+   	#move $s4, $zero
+   	
+   	
    	bne $t6, $zero, printSize
- 	  
+ 	
+    	#sw $s4, 0($zero)
+    	#la $s4, ($s5)
       	li $v0, 1
     	move $a0, $t7
     	syscall  
@@ -74,24 +82,38 @@ ifFirstWord:
      
      	add  $t6, $zero, $t0
      	add  $t5, $zero, $t0
-     	
-   	j addIterator
+     	la $s4, ($s5)
+     	j addZero
+   	#j addIterator
    
-        
+addZero:
+   	sb $zero, ($s4)
+   	addi $s4, $s4, 1
+   	addi $t4, $t4, 1
+   	bgt $t4,$t6, pointInit
+        j addZero    
+
+pointInit:
+	la $s4, ($s5)
+	
+	j addIterator
+         
 printSize:
 	addi $t7, $t7, -1
 	#la $s4, ($s5)
     	li $v0, 1
     	move $a0, $t7
-    	syscall  
     
+    	
+    	syscall  
+    	
      	li $v0, 4
-     	la $a0, auxWord
+     	la $a0, ($s4)
      	syscall
 
 	#la $s4, ($s5)
      	add  $t6, $zero, $t0
-    	j addIterator
+    	j addZero
     
 exit:
   	sub $t7, $t0, $t6 #need to do this here otherwise is going to ignore the last element
